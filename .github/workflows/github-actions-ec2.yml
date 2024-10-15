@@ -31,8 +31,11 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             sudo apt-get -y update
-            sudo apt-get install -y apache2
-            sudo systemctl start apache2
-            sudo systemctl enable apache2
-            cd home
-            sudo mv * /var/www/html
+            curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+            npm -v || { echo "npm not found, installing."; sudo apt-get install -y npm; }
+            cd /var/www/html
+            npm install
+            npm install -g pm2
+            pm2 start app.js --name "ec2-node-app" || pm2 restart "ec2-node-app"
+            pm2 save
